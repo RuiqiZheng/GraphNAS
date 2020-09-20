@@ -7,7 +7,8 @@ import torch
 
 import graphnas.trainer as trainer
 import graphnas.utils.tensor_utils as utils
-
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def build_args():
     parser = argparse.ArgumentParser(description='GraphNAS')
