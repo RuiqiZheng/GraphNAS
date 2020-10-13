@@ -33,7 +33,7 @@ class CitationGNNManager(object):
     def __init__(self, args):
 
         self.args = args
-
+        # check whether dataset is an argument in args
         if hasattr(args, 'dataset') and args.dataset in ["cora", "citeseer", "pubmed"]:
             self.data = load(args)
             self.args.in_feats = self.in_feats = self.data.features.shape[1]
@@ -69,6 +69,7 @@ class CitationGNNManager(object):
     # train from scratch
     def evaluate(self, actions=None, format="two"):
         actions = process_action(actions, format, self.args)
+        print("test")
         print("train action:", actions)
 
         # create model
@@ -98,6 +99,9 @@ class CitationGNNManager(object):
         origin_action = actions
         actions = process_action(actions, format, self.args)
         print("train action:", actions)
+        fo = open("genetic_citeseer.txt", "a+")
+        fo.write(str(actions))
+        fo.close()
 
         # create model
         model = self.build_gnn(actions)

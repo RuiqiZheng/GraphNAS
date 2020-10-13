@@ -2,13 +2,17 @@
 
 import argparse
 import time
-
+import numpy
 import torch
-
+import pygad
 import graphnas.trainer as trainer
 import graphnas.utils.tensor_utils as utils
 import ssl
+import logging
+from graphnas.search_space import MacroSearchSpace
+
 ssl._create_default_https_context = ssl._create_unverified_context
+
 
 def build_args():
     parser = argparse.ArgumentParser(description='GraphNAS')
@@ -19,8 +23,8 @@ def build_args():
 
 
 def register_default_args(parser):
-    parser.add_argument('--mode', type=str, default='train',
-                        choices=['train', 'derive'],
+    parser.add_argument('--mode', type=str, default='genetic_algorithm',
+                        choices=['train', 'derive','genetic_algorithm'],
                         help='train: Training GraphNAS, derive: Deriving Architectures')
     parser.add_argument('--random_seed', type=int, default=123)
     parser.add_argument("--cuda", type=bool, default=True, required=False,
@@ -98,10 +102,90 @@ def main(args):  # pylint:disable=redefined-outer-name
         trnr.train()
     elif args.mode == 'derive':
         trnr.derive()
+    elif args.mode == 'genetic_algorithm':
+        trnr.genetic_get_reward()
     else:
         raise Exception(f"[!] Mode not found: {args.mode}")
 
 
-if __name__ == "__main__":
+def fitness_func(solution, solution_idx):
     args = build_args()
-    main(args)
+    if args.cuda and not torch.cuda.is_available():  # cuda is not available
+        args.cuda = False
+    torch.manual_seed(args.random_seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.random_seed)
+    utils.makedirs(args.dataset)
+    trnr = trainer.Trainer(args)
+
+    search_space = MacroSearchSpace().search_space
+    gnn = []
+    gnn.append(search_space['attention_type'][int(solution[0])])
+    gnn.append(search_space['aggregator_type'][int(solution[1])])
+    gnn.append(search_space['activate_function'][int(solution[2])])
+    gnn.append(int(solution[3]))
+    gnn.append(int(solution[4]))
+    gnn.append(search_space['attention_type'][int(solution[5])])
+    gnn.append(search_space['aggregator_type'][int(solution[6])])
+    gnn.append(search_space['activate_function'][int(solution[7])])
+    gnn.append(int(solution[8]))
+    gnn.append(6)
+    fitness = trnr.genetic_get_reward(gnn)
+    return fitness
+
+
+def callback_gen(ga_instance):
+    fo = open("genetic_citeseer.txt", "a+")
+    fo.write("Generation : ")
+    fo.write(str(ga_instance.generations_completed))
+    fo.write("Fitness of the best solution :")
+    fo.write(str(ga_instance.best_solution()[1]))
+    fo.close()
+    print("Generation : ", ga_instance.generations_completed)
+    print("Fitness of the best solution :", ga_instance.best_solution()[1])
+
+
+if __name__ == "__main__":
+    num_generations = 50
+    num_parents_mating = 4
+    fitness_function = fitness_func
+
+    sol_per_pop = 8
+
+    parent_selection_type = "sss"
+    keep_parents = 1
+
+    crossover_type = "single_point"
+    attention_type_gene_space = [0, 1, 2, 3, 4, 5, 6]
+    aggregator_type_gene_space = [0, 1, 2, 3]
+    activate_function_gene_space = [0, 1, 2, 3, 4, 5, 6, 7]
+    number_of_heads_gene_space = [1, 2, 4, 6, 8, 16]
+    hidden_units_gene_space = [4, 8, 16, 32, 64, 128, 256]
+    gene_space = [attention_type_gene_space, aggregator_type_gene_space, activate_function_gene_space,
+                  number_of_heads_gene_space, hidden_units_gene_space, attention_type_gene_space,
+                  aggregator_type_gene_space, activate_function_gene_space, number_of_heads_gene_space]
+    num_genes = len(gene_space)
+    mutation_type = "random"
+    mutation_percent_genes = 10
+
+    ga_instance = pygad.GA(num_generations=num_generations,
+                           num_parents_mating=num_parents_mating,
+                           gene_type=int,
+                           fitness_func=fitness_function,
+                           sol_per_pop=sol_per_pop,
+                           num_genes=num_genes,
+                           gene_space=gene_space,
+                           parent_selection_type=parent_selection_type,
+                           keep_parents=keep_parents,
+                           crossover_type=crossover_type,
+                           mutation_type=mutation_type,
+                           callback_generation=callback_gen,
+                           mutation_percent_genes=mutation_percent_genes)
+
+    ga_instance.run()
+    ga_instance.plot_result()
+    solution, solution_fitness, solution_idx = ga_instance.best_solution()
+    print("Parameters of the best solution : {solution}".format(solution=solution))
+    print("Fitness value of the best solution = {solution_fitness}".format(solution_fitness=solution_fitness))
+    print("Index of the best solution : {solution_idx}".format(solution_idx=solution_idx))
+

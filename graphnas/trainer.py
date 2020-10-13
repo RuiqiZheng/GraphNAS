@@ -62,7 +62,7 @@ class Trainer(object):
         self.submodel_manager = None
         self.controller = None
         self.build_model()  # build controller and sub-model
-
+        # default controller_optim is adam
         controller_optimizer = _get_optimizer(self.args.controller_optim)
         self.controller_optim = controller_optimizer(self.controller.parameters(), lr=self.args.controller_lr)
 
@@ -78,6 +78,7 @@ class Trainer(object):
             from graphnas.search_space import MacroSearchSpace
             search_space_cls = MacroSearchSpace()
             self.search_space = search_space_cls.get_search_space()
+            # layers_of_child_model is 2
             self.action_list = search_space_cls.generate_action_list(self.args.layers_of_child_model)
             # build RNN controller
             from graphnas.graphnas_controller import SimpleNASController
@@ -91,7 +92,6 @@ class Trainer(object):
             if self.args.dataset in ["Cora", "Citeseer", "Pubmed"]:
                 # implements based on pyg
                 self.submodel_manager = GeoCitationManager(self.args)
-
 
         if self.args.search_mode == "micro":
             self.args.format = "micro"
@@ -179,6 +179,11 @@ class Trainer(object):
                     raise e
 
         print("*" * 35, "training over", "*" * 35)
+
+    def genetic_get_reward(self, gnn):
+        gnn = self.form_gnn_info(gnn)
+        reward = self.submodel_manager.test_with_param(gnn, format=self.args.format,with_retrain=self.with_retrain)
+        return reward
 
     def get_reward(self, gnn_list, entropies, hidden):
         """

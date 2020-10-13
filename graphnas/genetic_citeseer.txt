@@ -1,0 +1,1 @@
+['const', 'mlp', 'softplus', 6, 4, 'gat', 'max', 'relu', 8, 6]

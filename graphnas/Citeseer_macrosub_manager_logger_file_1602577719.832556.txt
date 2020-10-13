@@ -1,0 +1,2 @@
+['gat_sym', 'mean', 'softplus', 1, 256, 'gcn', 'max', 'leaky_relu', 4, 6];0.236;0.236
+['gcn', 'mean', 'linear', 6, 32, 'gcn', 'max', 'elu', 1, 6];0.006000000000000005;0.242
