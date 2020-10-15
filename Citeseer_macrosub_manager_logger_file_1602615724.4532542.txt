@@ -1,0 +1,1 @@
+['generalized_linear', 'sum', 'tanh', 16, 256, 'cos', 'sum', 'elu', 1, 6];0.5;0.728

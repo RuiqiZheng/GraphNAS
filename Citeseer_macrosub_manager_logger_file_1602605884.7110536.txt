@@ -1,0 +1,1 @@
+['generalized_linear', 'max', 'leaky_relu', 4, 256, 'gat', 'mean', 'relu', 4, 6];0.058;0.058

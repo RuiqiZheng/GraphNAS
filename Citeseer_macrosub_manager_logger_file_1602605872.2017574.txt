@@ -1,0 +1,1 @@
+['gcn', 'mlp', 'leaky_relu', 8, 64, 'gat_sym', 'mean', 'tanh', 2, 6];0.298;0.298

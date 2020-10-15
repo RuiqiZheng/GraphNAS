@@ -1,0 +1,5 @@
+['cos', 'sum', 'softplus', 1, 4, 'gcn', 'mean', 'tanh', 8, 6];0.228;0.228
+['gcn', 'mlp', 'elu', 16, 8, 'gcn', 'sum', 'softplus', 4, 6];0.44800000000000006;0.676
+['cos', 'sum', 'linear', 2, 64, 'gat', 'mean', 'tanh', 6, 6];-0.176;0.276
+['cos', 'sum', 'sigmoid', 6, 16, 'gcn', 'sum', 'tanh', 4, 6];-0.16133333333333336;0.232
+['const', 'mlp', 'sigmoid', 2, 4, 'linear', 'mean', 'linear', 16, 6];-0.04700000000000004;0.306

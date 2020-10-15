@@ -44,8 +44,24 @@ def build_args():
     args = parser.parse_args()
 
     return args
+def eval(chromosome):
+    args = build_args()
 
-
+    
+    dataset_list = ["Citeseer", "Pubmed", "cora"]
+    base_list = ["pyg", "pyg", "dgl", ]
+    for dataset, actions, base in zip(dataset_list, chromosome, base_list):
+        # if dataset == "cora":
+        #     continue
+        args.dataset = dataset
+        if base == "dgl":
+            manager = CitationGNNManager(args)
+        else:
+            manager = GeoCitationManager(args)
+        val_acc, test_acc = manager.evaluate(actions)
+        print(test_acc)
+        print("_" * 80)
+        return test_acc 
 if __name__ == "__main__":
     args = build_args()
 

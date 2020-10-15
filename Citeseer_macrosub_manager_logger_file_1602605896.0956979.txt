@@ -1,0 +1,1 @@
+['generalized_linear', 'sum', 'tanh', 2, 16, 'linear', 'max', 'relu6', 4, 6];0.058;0.058

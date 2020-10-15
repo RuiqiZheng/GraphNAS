@@ -1,0 +1,1 @@
+['gat_sym', 'sum', 'softplus', 4, 16, 'generalized_linear', 'mlp', 'elu', 6, 6];0.294;0.294

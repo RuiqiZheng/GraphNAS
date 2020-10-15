@@ -1,0 +1,8 @@
+['gat_sym', 'mlp', 'leaky_relu', 6, 4, 'linear', 'mlp', 'softplus', 4, 6];0.5;0.584
+['gat', 'max', 'elu', 6, 32, 'cos', 'max', 'linear', 16, 6];-0.352;0.232
+['linear', 'max', 'leaky_relu', 1, 128, 'gat_sym', 'mlp', 'relu', 8, 6];-0.35;0.058
+['generalized_linear', 'max', 'softplus', 4, 64, 'gcn', 'mlp', 'leaky_relu', 16, 6];-0.03533333333333333;0.256
+['const', 'max', 'softplus', 8, 64, 'generalized_linear', 'max', 'leaky_relu', 1, 6];-0.05050000000000002;0.232
+['linear', 'mlp', 'linear', 8, 8, 'gat_sym', 'mean', 'elu', 1, 6];-0.06040000000000004;0.212
+['generalized_linear', 'mean', 'softplus', 4, 8, 'cos', 'max', 'sigmoid', 8, 6];-0.03033333333333335;0.232
+['gat_sym', 'mlp', 'tanh', 4, 64, 'gat_sym', 'max', 'leaky_relu', 6, 6];-0.025999999999999995;0.232

@@ -1,0 +1,1 @@
+['gat_sym', 'sum', 'softplus', 8, 6];0.5;0.65

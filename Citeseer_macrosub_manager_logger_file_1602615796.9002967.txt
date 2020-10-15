@@ -1,0 +1,1 @@
+['generalized_linear', 'mlp', 'softplus', 1, 32, 'linear', 'sum', 'tanh', 2, 6];0.43;0.43

@@ -1,0 +1,1 @@
+['gat', 'mean', 'relu', 8, 8, 'linear', 'mlp', 'tanh', 8, 6];0.294;0.294

@@ -1,0 +1,1 @@
+['linear', 'mlp', 'relu6', 6, 128, 'generalized_linear', 'sum', 'tanh', 4, 6];0.5;0.704

@@ -1,0 +1,1 @@
+['gcn', 'mlp', 'relu6', 4, 4, 'gcn', 'sum', 'sigmoid', 1, 6];0.5;0.674

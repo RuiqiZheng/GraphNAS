@@ -1,0 +1,1 @@
+['cos', 'sum', 'tanh', 8, 32, 'const', 'max', 'softplus', 16, 6];0.232;0.232

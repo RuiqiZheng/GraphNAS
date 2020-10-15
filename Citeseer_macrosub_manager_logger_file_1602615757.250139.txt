@@ -1,0 +1,1 @@
+['linear', 'mlp', 'leaky_relu', 6, 6];0.35;0.35

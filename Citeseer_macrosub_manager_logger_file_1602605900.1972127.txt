@@ -1,0 +1,1 @@
+['const', 'sum', 'softplus', 1, 8, 'linear', 'max', 'relu6', 1, 6];0.058;0.058

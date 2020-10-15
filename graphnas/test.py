@@ -9,9 +9,18 @@ import graphnas.trainer as trainer
 import graphnas.utils.tensor_utils as utils
 import ssl
 import logging
+import random
 from graphnas.search_space import MacroSearchSpace
 
 ssl._create_default_https_context = ssl._create_unverified_context
+POPULATION_SIZE = 100
+search_space = [
+["gat", "gcn", "cos", "const", "gat_sym", "linear", "generalized_linear"],
+["sum", "meaen", "max", "mlp"],
+["sigmoid", "tanh", "relu", "linear", "softplus", "leaky_relu", "relu6", "elu"],
+[1, 2, 4, 6, 8, 16],
+[4, 8, 16, 32, 64, 128,256],
+]
 
 
 def build_args():
@@ -82,8 +91,96 @@ def register_default_args(parser):
     parser.add_argument('--submanager_log_file', type=str, default=f"sub_manager_logger_file_{time.time()}.txt")
 
 
-def main(args):  # pylint:disable=redefined-outer-name
+#def main(args):  # pylint:disable=redefined-outer-name
 
+    
+
+def fitness_func(chromosome):
+    args = build_args()
+    if args.cuda and not torch.cuda.is_available():  # cuda is not available
+        args.cuda = False
+    torch.manual_seed(args.random_seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.random_seed)
+    utils.makedirs(args.dataset)
+    trnr = trainer.Trainer(args)
+
+    
+    fitness = trnr.genetic_get_reward(chromosome)
+    #fitness = trnr.genetic_get_reward([
+     #   ['gat', 'sum', 'linear', 4, 128, 'linear', 'sum', 'elu', 8, 6],
+      #  ['gcn', 'sum', 'tanh', 6, 64, 'cos', 'sum', 'tanh', 6, 3],
+       # ['const', 'sum', 'relu6', 2, 128, 'gat', 'sum', 'linear', 2, 7],
+   # ])
+    return fitness
+
+
+def generate_layer(num_within_layer):
+    layer = []
+    for i in range(num_within_layer):
+        layer.append(random.choice(search_space[0]))
+        layer.append(random.choice(search_space[1]))
+        layer.append(random.choice(search_space[2]))
+        layer.append(random.choice(search_space[3]))
+        layer.append(random.choice(search_space[4]))
+        
+    return layer
+
+class Individual(object):
+    '''
+    Class representing individual in population
+    '''
+    def __init__(self, chromosome = []):
+        
+        if not chromosome:
+            self.chromosome = []
+            self.num_layer = random.randrange(1,3)
+            for i in range(self.num_layer):
+                num_within_layer = random.randrange(1,2)
+                layer = generate_layer(num_within_layer)
+                self.chromosome.append(layer)
+        else:
+            self.chromosome = chromosome
+            self.num_layer = len(chromosome)
+        print(sum(self.chromosome,[]))
+        self.fitness = fitness_func(sum(self.chromosome,[]))
+
+        print(self.fitness)
+
+
+    def mutated_genes(self):
+       mute_layer = random.randrange(self.num_layer)
+       gen_within_layer = random.randrange(len(self.chromosome[mute_layer]))
+       return random.choice(search_space[gen_within_layer%5])
+
+    def mate(self, par2):
+        '''
+        Perform mating and produce new offspring
+        '''
+# chromosome for offspring
+        child_chromosome = []
+        for gp1, gp2 in zip(self.chromosome, par2.chromosome):
+# random probability
+            prob = random.random()
+# if prob is less than 0.45, insert gene
+            # from parent 1
+            if prob < 0.45:
+                child_chromosome.append(gp1)
+# if prob is between 0.45 and 0.90, insert
+            # gene from parent 2
+            elif prob < 0.90:
+                child_chromosome.append(gp2)
+# otherwise insert random gene(mutate),
+            # for maintaining diversity
+            else:
+                child_chromosome.append(self.mutated_genes())
+# create new Individual(offspring) using
+        # generated chromosome for offspring
+        return Individual(child_chromosome)
+
+# Driver code
+def main():
+    args = build_args()
     if args.cuda and not torch.cuda.is_available():  # cuda is not available
         args.cuda = False
     # args.max_epoch = 1
@@ -97,95 +194,41 @@ def main(args):  # pylint:disable=redefined-outer-name
 
     trnr = trainer.Trainer(args)
 
-    if args.mode == 'train':
-        print(args)
-        trnr.train()
-    elif args.mode == 'derive':
-        trnr.derive()
-    elif args.mode == 'genetic_algorithm':
-        trnr.genetic_get_reward()
-    else:
-        raise Exception(f"[!] Mode not found: {args.mode}")
 
 
-def fitness_func(solution, solution_idx):
-    args = build_args()
-    if args.cuda and not torch.cuda.is_available():  # cuda is not available
-        args.cuda = False
-    torch.manual_seed(args.random_seed)
-    if args.cuda:
-        torch.cuda.manual_seed(args.random_seed)
-    utils.makedirs(args.dataset)
-    global trnr
-
-    search_space = MacroSearchSpace().search_space
-    gnn = []
-    gnn.append(search_space['attention_type'][int(solution[0])])
-    gnn.append(search_space['aggregator_type'][int(solution[1])])
-    gnn.append(search_space['activate_function'][int(solution[2])])
-    gnn.append(int(solution[3]))
-    gnn.append(int(solution[4]))
-    gnn.append(search_space['attention_type'][int(solution[5])])
-    gnn.append(search_space['aggregator_type'][int(solution[6])])
-    gnn.append(search_space['activate_function'][int(solution[7])])
-    gnn.append(int(solution[8]))
-    gnn.append(6)
-    fitness = trnr.genetic_get_reward(gnn)[1]
-    return fitness
-
-
-def callback_gen(ga_instance):
-    fo = open("genetic_citeseer.txt", "a+")
-    fo.write("Generation : ")
-    fo.write(str(ga_instance.generations_completed))
-    fo.write("Fitness of the best solution :")
-    fo.write(str(ga_instance.best_solution()[1]))
-    fo.close()
-    print("Generation : ", ga_instance.generations_completed)
-    print("Fitness of the best solution :", ga_instance.best_solution()[1])
-
-
-if __name__ == "__main__":
-    num_generations = 50
-    num_parents_mating = 2
-    fitness_function = fitness_func
-
-    sol_per_pop = 8
-
-    parent_selection_type = "sss"
-    keep_parents = 1
-
-    crossover_type = "single_point"
-    attention_type_gene_space = [0, 1, 2, 3, 4, 5, 6]
-    aggregator_type_gene_space = [0, 1, 2, 3]
-    activate_function_gene_space = [0, 1, 2, 3, 4, 5, 6, 7]
-    number_of_heads_gene_space = [1, 2, 4, 6, 8, 16]
-    hidden_units_gene_space = [4, 8, 16, 32, 64, 128, 256]
-    gene_space = [attention_type_gene_space, aggregator_type_gene_space, activate_function_gene_space,
-                  number_of_heads_gene_space, hidden_units_gene_space, attention_type_gene_space,
-                  aggregator_type_gene_space, activate_function_gene_space, number_of_heads_gene_space]
-    num_genes = len(gene_space)
-    mutation_type = "random"
-    mutation_percent_genes = 10
-    args = build_args()
-    trnr = trainer.Trainer(args)
-    ga_instance = pygad.GA(num_generations=num_generations,
-                           num_parents_mating=num_parents_mating,
-                           gene_type=int,
-                           fitness_func=fitness_function,
-                           sol_per_pop=sol_per_pop,
-                           num_genes=num_genes,
-                           gene_space=gene_space,
-                           parent_selection_type=parent_selection_type,
-                           keep_parents=keep_parents,
-                           crossover_type=crossover_type,
-                           mutation_type=mutation_type,
-                           callback_generation=callback_gen,
-                           mutation_percent_genes=mutation_percent_genes)
-
-    ga_instance.run()
-    ga_instance.plot_result()
-    solution, solution_fitness, solution_idx = ga_instance.best_solution()
-    print("Parameters of the best solution : {solution}".format(solution=solution))
-    print("Fitness value of the best solution = {solution_fitness}".format(solution_fitness=solution_fitness))
-    print("Index of the best solution : {solution_idx}".format(solution_idx=solution_idx))
+# current generation
+    generation = 1
+    found = False
+    population = []
+# create initial population
+    for _ in range(POPULATION_SIZE):
+        population.append(Individual())
+    while not found:
+# sort the population in increasing order of fitness score
+        population = sorted(population, key=lambda x: x.fitness)
+    # if the individual having lowest fitness score ie.
+            # 0 then we know that we have reached to the targeta
+            # and break the loop
+        if population[0].fitness >= 0.8:
+            found = True
+            break
+# Otherwise generate new offsprings for new generation
+        new_generation = []
+# Perform Elitism, that mean 10% of fittest population
+        # goes to the next generation
+        s = int((10 * POPULATION_SIZE) / 100)
+        new_generation.extend(population[:s])
+# From 50% of fittest population, Individuals
+        # will mate to produce offspring
+        s = int((90 * POPULATION_SIZE) / 100)
+        for _ in range(s):
+            parent1 = random.choice(population[:50])
+            parent2 = random.choice(population[:50])
+            child = parent1.mate(parent2)
+            new_generation.append(child)
+        population = new_generation
+        print("Best by now:",generation, population[0].chromosome)
+        generation += 1
+        
+if __name__ == '__main__':
+    main()

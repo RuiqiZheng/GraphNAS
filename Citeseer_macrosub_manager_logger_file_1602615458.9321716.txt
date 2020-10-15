@@ -1,0 +1,1 @@
+['gcn', 'mlp', 'elu', 2, 256, 'generalized_linear', 'mlp', 'softplus', 4, 6];0.354;0.354
