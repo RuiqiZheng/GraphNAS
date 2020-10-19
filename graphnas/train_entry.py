@@ -147,10 +147,10 @@ def callback_gen(ga_instance):
     print("Fitness of the best solution :", ga_instance.best_solution()[1])
 
 
-if __name__ == '__main__':
+for i in range(1):
     total_time = time.time()
     args = build_args()
-    num_generations = 50
+    num_generations = 200
     num_parents_mating = 4
     sol_per_pop = 8
     parent_selection_type = "sss"

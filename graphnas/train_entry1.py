@@ -58,7 +58,7 @@ def register_default_args(parser):
     parser.add_argument('--derive_from_history', type=bool, default=True)
 
     # child model
-    parser.add_argument("--dataset", type=str, default="Citeseer", required=False,
+    parser.add_argument("--dataset", type=str, default="Cora", required=False,
                         help="The input dataset.")
     parser.add_argument("--epochs", type=int, default=300,
                         help="number of training epochs")
@@ -147,16 +147,18 @@ def callback_gen(ga_instance):
     print("Fitness of the best solution :", ga_instance.best_solution()[1])
 
 
-if __name__ == '__main__':
+for i in range(1):
     total_time = time.time()
     args = build_args()
-    num_generations = 50
+    num_generations = 100
     num_parents_mating = 4
     sol_per_pop = 8
     parent_selection_type = "sss"
     keep_parents = 1
     with open(args.dataset + "_" + args.search_mode + args.submanager_log_file, "a") as file:
         # with open(f'{self.args.dataset}_{self.args.search_mode}_{self.args.format}_manager_result.txt', "a") as file:
+        file.write("dataset: ")
+        file.write(str(args.dataset))
         file.write("num_generations = ")
         file.write(str(num_generations))
         file.write("num_parents_mating = ")

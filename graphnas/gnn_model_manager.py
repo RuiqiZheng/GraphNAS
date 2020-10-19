@@ -99,9 +99,7 @@ class CitationGNNManager(object):
         origin_action = actions
         actions = process_action(actions, format, self.args)
         print("train action:", actions)
-        fo = open("genetic_citeseer.txt", "a+")
-        fo.write(str(actions))
-        fo.close()
+        current_time = time.time()
 
         # create model
         model = self.build_gnn(actions)
@@ -122,11 +120,11 @@ class CitationGNNManager(object):
         reward = self.reward_manager.get_reward(val_acc)
         self.save_param(model, update_all=(reward > 0))
 
-        self.record_action_info(origin_action, reward, val_acc)
+        self.record_action_info(origin_action, reward, val_acc, time.time()-current_time)
 
         return reward, val_acc
 
-    def record_action_info(self, origin_action, reward, val_acc):
+    def record_action_info(self, origin_action, reward, val_acc, time_one_action=0):
         with open(self.args.dataset + "_" + self.args.search_mode + self.args.submanager_log_file, "a") as file:
             # with open(f'{self.args.dataset}_{self.args.search_mode}_{self.args.format}_manager_result.txt', "a") as file:
             file.write(str(origin_action))
@@ -136,6 +134,9 @@ class CitationGNNManager(object):
 
             file.write(";")
             file.write(str(val_acc))
+            file.write(";")
+            file.write(str(time_one_action))
+
             file.write("\n")
 
     def build_gnn(self, actions):
