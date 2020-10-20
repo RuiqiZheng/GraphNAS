@@ -1,7 +1,7 @@
 # import numpy as np
 # data = np.loadtxt("../Cora_macrosub_manager_logger_file_1602862015.8844802.txt",delimiter = ";", dtype='str')
-file_path = "../Citeseer_macrosub_manager_logger_file_1602842355.2909763.txt"
-dataset = "Citeseer"
+file_path = "/home/qul/PenghuiRuan/GNASZRQ/GraphNAS/Cora_macrosub_manager_logger_file_1603120998.9757247.txt"
+dataset = "Cora"
 parameter = "generation100"
 import matplotlib.pyplot as plt
 def set_size(w,h, ax=None):
@@ -25,7 +25,7 @@ while line:
     if line[0] == '[':
         line = line.split(';')
         individual_time.append(float(line[3][:-1]))
-        individual_accuracy.append(float(line[2][:-1]))
+        individual_accuracy.append(float(line[2]))
         line=data.readline()
         continue
     if line[0] == 'F':
